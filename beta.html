@@ -5,11 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smash Bros-like Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { background: #87CEEB; display: block; }
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        #gameCanvas { background: #87CEEB; display: none; }
+        #lobby, #loading { display: flex; justify-content: center; align-items: center; height: 100vh; background: #333; color: white; flex-direction: column; }
+        .character { margin: 10px; padding: 20px; background: #555; cursor: pointer; }
+        .character:hover { background: #777; }
+        #loading { display: none; font-size: 24px; }
     </style>
 </head>
 <body>
+    <div id="lobby">
+        <h1>Select Your Character</h1>
+        <div class="character" data-color="red">Red</div>
+        <div class="character" data-color="blue">Blue</div>
+        <div class="character" data-character="pacman">Pac-Man</div>
+        <div class="character" data-character="mario">Mario</div>
+    </div>
+    <div id="loading">Loading...</div>
     <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -18,20 +30,40 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        const images = {
+            pacman: new Image(),
+            mario: new Image()
+        };
+
+        // Base64エンコードされた画像データ
+        images.pacman.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAqFBMVEUAAADx7vHz8/Po6enl5ebt7e3w8PDw8PD////09PT39/fa2tr7+/vk5OT////7+/v4+PhLS0ufn5+2trbb29vx8fHT09P4+Pjo6OjT09M8PDzg4ODPz88HBweqqqrZ2dnDw8Pd3d2IiIhwcHBWVlbp6ekSEhKZmZnFxcV+fn5VVVVGRkbCwsJHR0fIyMh+fn7e3t4AAACZQ1hQdHRHd29rAAAGrUlEQVQ4y6WS61LDIAyFbRKCmG4iS+V2Pv8v+tFtyzC5AgDbw3Sv//c6+MCff2z93/8cLkX3bWg4U3sJEVSgoGcdQm2Vtx93n5tqI/5rNqNmZW37eKbJjOnQHhrd0+ThqlXt2MeTgrcZ+yQtHZz4UInyLquCjcYx1zGRjIHwXKxUs7ZFPuMvXxoROZBJzD3fqDT8iG0TeMAvcFrFYxvSo7KfT5v25dHgE5A1LKD2bDLjsz6XDE0M1KPVbXPDbrKbghDDzvcRQQRS7wp7dLCeMZknazD2InRQGLTXioLzOX0Ko47bnGVJH0aLhwrT1xILZIkzdMI+M2abZZxfp3i52x0XR9x5WJqH0tD5QQLd2WZbGkzS80rRNxGlnhMEzRi8MQEk2ijTg80FZP+OIp7CL/hVqAV+XweA2vJGb0C8cYOdGZ4XZrS6SZmUzPoQs++yRsCgm6bSt5KkO/RIR/eGFDJ/Easxvgb3Bxg/DaE4NyAJTtXOM8M3oHLTyCph1fG4A8ROrMDgN8PQTjMnYd3x8CM+LRDJ7GYj9Lwp9QQ4SKNFHf2G3w+4JEC/w9mjJqxtp1b1vNkfb4VnftPhxAeHbrAgtpntP4jmrKbbLZ7kCBhM9nqPT0xOWFb0XTZxVbmtH9v2NnsVoTMOtFg5y+eeu3GbF10UVi7rNTkKJ+H2p+KkbA1tK46t6hb4XdG2Nf3E5wZz7Fy5nC+qvJwwc3xvwAQFz0Ezy8z2+RJKx9RlP2DRoDS5B1Wz3JlzA7j7d6Njh3CpKe0+St4PgYunN2Sz9hLs2cI2ENuUt54KGrhvvXvEkWDF4qY9aHlAdXB4rbKOb19cUd91XYtf5sh9VDFzgdl56AOy8tU73z2i7n9PijSgT/9lHR1Lv13+xAAAAAElFTkSuQmCC';
+        images.mario.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAUVBMVEUAAADW19jY2Nl5f3Tq6eqUmZiLjpCzz9prfW70+fWruLuQj6T5+/fMzsy+pqeOj44AfH2kp6SioqMKemYZGWllY2J8fn9TUlM6OjsyLy2ISXIpKCsMAAAAXElEQVQI12OAVRL+QyKgCEUEhkKIM4kcOBA1Q6tEzUz5k6BClc1pFBwtbXRUuOotGdi0XYErF/2cUtH7ikJfTtdH5ajzZpfMj6ZoDJsbA0ElOtUDEWIwMAOXooIVM/UD3AAAAAElFTkSuQmCC';
+
         const player = {
             x: canvas.width / 2,
             y: canvas.height - 150,
             width: 50,
             height: 50,
             color: 'red',
+            character: null,
             speed: 5,
             dx: 0,
             dy: 0
         };
 
         function drawPlayer() {
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            if (player.character === 'pacman') {
+                drawCharacter(images.pacman);
+            } else if (player.character === 'mario') {
+                drawCharacter(images.mario);
+            } else {
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+            }
+        }
+
+        function drawCharacter(image) {
+            ctx.drawImage(image, player.x, player.y, player.width, player.height);
         }
 
         function clear() {
@@ -86,32 +118,3 @@
             } else if (e.key === 'ArrowLeft' || e.key === 'a') {
                 moveLeft();
             } else if (e.key === 'ArrowUp' || e.key === 'w') {
-                moveUp();
-            } else if (e.key === 'ArrowDown' || e.key === 's') {
-                moveDown();
-            }
-        }
-
-        function keyUp(e) {
-            if (
-                e.key === 'ArrowRight' ||
-                e.key === 'd' ||
-                e.key === 'ArrowLeft' ||
-                e.key === 'a' ||
-                e.key === 'ArrowUp' ||
-                e.key === 'w' ||
-                e.key === 'ArrowDown' ||
-                e.key === 's'
-            ) {
-                player.dx = 0;
-                player.dy = 0;
-            }
-        }
-
-        document.addEventListener('keydown', keyDown);
-        document.addEventListener('keyup', keyUp);
-
-        update();
-    </script>
-</body>
-</html>
