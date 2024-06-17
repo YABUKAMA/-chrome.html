@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>簡単な3Dゲーム</title>
+<title>3人称視点での街の描画</title>
 <style>
     body {
         margin: 0;
@@ -26,35 +26,69 @@
             scene = new THREE.Scene();
 
             // カメラを作成
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 10;
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 10);
 
             // レンダラーを作成
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // ジオメトリとマテリアルを作成
-            const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-
             // プレイヤーを作成
+            const geometry = new THREE.BoxGeometry(1, 2, 1);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
             player = new THREE.Mesh(geometry, material);
+            player.position.y = 1;
             scene.add(player);
+
+            // 地面を作成
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = Math.PI / 2;
+            scene.add(ground);
+
+            // 街を作成（簡易的なもの）
+            createCity();
 
             // カメラコントロールを追加
             controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.target = player.position;
 
             // ウィンドウサイズが変更されたときの処理
             window.addEventListener('resize', onWindowResize);
         }
 
+        function createCity() {
+            // 街の建物をランダムに配置
+            const buildingMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+
+            for (let i = 0; i < 20; i++) {
+                const buildingHeight = Math.random() * 10 + 5;
+                const buildingWidth = Math.random() * 5 + 3;
+                const buildingDepth = Math.random() * 5 + 3;
+
+                const buildingGeometry = new THREE.BoxGeometry(buildingWidth, buildingHeight, buildingDepth);
+                const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                
+                building.position.x = Math.random() * 50 - 25;
+                building.position.z = Math.random() * 50 - 25;
+                building.position.y = buildingHeight / 2;
+
+                scene.add(building);
+            }
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
-            // プレイヤーを回転させる
-            player.rotation.x += 0.01;
+            // プレイヤーを回転させる（単純な回転）
             player.rotation.y += 0.01;
+
+            // カメラをプレイヤーの周りに配置
+            const playerPosition = player.position.clone().add(new THREE.Vector3(0, 5, 10));
+            camera.position.lerp(playerPosition, 0.1);
+            camera.lookAt(player.position);
 
             // レンダリング
             renderer.render(scene, camera);
