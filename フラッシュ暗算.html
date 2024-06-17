@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フラッシュ暗算装置</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+    
+    .calculator {
+        width: 300px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    #inputField {
+        width: calc(100% - 20px);
+        margin-bottom: 10px;
+        padding: 10px;
+        font-size: 1.5em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: right;
+    }
+    
+    .level-selection {
+        margin-bottom: 10px;
+    }
+    
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    
+    button {
+        padding: 15px;
+        font-size: 1.2em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        transition: background-color 0.3s ease;
+    }
+    
+    button:hover {
+        background-color: #e0e0e0;
+    }
+</style>
+</head>
+<body>
+<div class="calculator">
+    <input type="text" id="inputField" readonly>
+    <div class="level-selection">
+        <label for="levelSelect">レベルを選択:</label>
+        <select id="levelSelect" onchange="changeLevel()">
+            <option value="1">レベル1 (100まで)</option>
+            <option value="2">レベル2 (500まで)</option>
+            <option value="3">レベル3 (1000まで)</option>
+            <option value="4">レベル4 (5000まで)</option>
+            <option value="5">レベル5 (12000まで)</option>
+            <option value="6">レベル6 (90000まで)</option>
+            <option value="7">レベル7 (1000000000まで)</option>
+        </select>
+    </div>
+    <div class="buttons">
+        <button onclick="clearInput()">C</button>
+        <button onclick="generateRandomNumber()">ランダム数生成</button>
+        <button onclick="appendInput('7')">7</button>
+        <button onclick="appendInput('8')">8</button>
+        <button onclick="appendInput('9')">9</button>
+        <button onclick="appendInput('+')">+</button>
+        <button onclick="appendInput('4')">4</button>
+        <button onclick="appendInput('5')">5</button>
+        <button onclick="appendInput('6')">6</button>
+        <button onclick="appendInput('-')">-</button>
+        <button onclick="appendInput('1')">1</button>
+        <button onclick="appendInput('2')">2</button>
+        <button onclick="appendInput('3')">3</button>
+        <button onclick="appendInput('*')">*</button>
+        <button onclick="appendInput('0')">0</button>
+        <button onclick="appendInput('.')">.</button>
+        <button onclick="calculate()">=</button>
+        <button onclick="appendInput('/')">/</button>
+    </div>
+</div>
+
+<script>
+    let inputField = document.getElementById('inputField');
+    let levelSelect = document.getElementById('levelSelect');
+    let currentLevel = 1;
+    let levelRanges = {
+        1: { min: 1, max: 100 },
+        2: { min: 1, max: 500 },
+        3: { min: 1, max: 1000 },
+        4: { min: 1, max: 5000 },
+        5: { min: 1, max: 12000 },
+        6: { min: 1, max: 90000 },
+        7: { min: 1, max: 1000000000 }
+    };
+    
+    function changeLevel() {
+        currentLevel = parseInt(levelSelect.value);
+    }
+    
+    function generateRandomNumber() {
+        let min = levelRanges[currentLevel].min;
+        let max = levelRanges[currentLevel].max;
+        let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+        inputField.value = randomNumber;
+    }
+    
+    function appendInput(value) {
+        inputField.value += value;
+    }
+    
+    function clearInput() {
+        inputField.value = '';
+    }
+    
+    function calculate() {
+        try {
+            let result = eval(inputField.value);
+            inputField.value = result;
+        } catch (error) {
+            inputField.value = 'Error';
+        }
+    }
+</script>
+</body>
+</html>
