@@ -74,23 +74,7 @@
     </div>
     <div class="buttons">
         <button onclick="clearInput()">C</button>
-        <button onclick="generateRandomNumber()">ランダム数生成</button>
-        <button onclick="appendInput('7')">7</button>
-        <button onclick="appendInput('8')">8</button>
-        <button onclick="appendInput('9')">9</button>
-        <button onclick="appendInput('+')">+</button>
-        <button onclick="appendInput('4')">4</button>
-        <button onclick="appendInput('5')">5</button>
-        <button onclick="appendInput('6')">6</button>
-        <button onclick="appendInput('-')">-</button>
-        <button onclick="appendInput('1')">1</button>
-        <button onclick="appendInput('2')">2</button>
-        <button onclick="appendInput('3')">3</button>
-        <button onclick="appendInput('*')">*</button>
-        <button onclick="appendInput('0')">0</button>
-        <button onclick="appendInput('.')">.</button>
-        <button onclick="calculate()">=</button>
-        <button onclick="appendInput('/')">/</button>
+        <button onclick="startFlashCalculation()">フラッシュ暗算開始</button>
     </div>
 </div>
 
@@ -112,28 +96,28 @@
         currentLevel = parseInt(levelSelect.value);
     }
     
-    function generateRandomNumber() {
-        let min = levelRanges[currentLevel].min;
-        let max = levelRanges[currentLevel].max;
-        let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-        inputField.value = randomNumber;
+    function startFlashCalculation() {
+        let count = 0;
+        flashNextNumber(count);
     }
     
-    function appendInput(value) {
-        inputField.value += value;
+    function flashNextNumber(count) {
+        if (count < 7) {
+            let min = levelRanges[currentLevel].min;
+            let max = levelRanges[currentLevel].max;
+            let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+            inputField.value = randomNumber;
+            count++;
+            setTimeout(function() {
+                flashNextNumber(count);
+            }, 600); // 0.6秒後に次の数を表示
+        } else {
+            inputField.value = ''; // 7回表示後は空にする
+        }
     }
     
     function clearInput() {
         inputField.value = '';
-    }
-    
-    function calculate() {
-        try {
-            let result = eval(inputField.value);
-            inputField.value = result;
-        } catch (error) {
-            inputField.value = 'Error';
-        }
     }
 </script>
 </body>
