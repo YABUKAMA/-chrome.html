@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スロットマシン with お金と闇金 (セーブとロード)</title>
+<style>
+    body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+    .reel-container {
+        display: inline-block;
+        margin: 20px;
+        border: 1px solid #000;
+        padding: 10px;
+    }
+    .reel {
+        width: 100px;
+        height: 100px;
+        border: 1px solid #000;
+        overflow: hidden;
+        margin: 5px auto;
+        position: relative;
+    }
+    .reel img {
+        display: block;
+        width: 100px;
+        position: absolute;
+        top: 0;
+        transition: top 1s ease-out;
+    }
+    #money {
+        font-size: 1.2em;
+    }
+    #loan-button {
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+<h1>スロットマシン with お金と闇金 (セーブとロード)</h1>
+<div>
+    <p>所持金: <span id="money">0</span> 円</p>
+    <button onclick="spin()">スピン！</button>
+    <button onclick="saveGame()">セーブ</button>
+    <button onclick="loadGame()">ロード</button>
+</div>
+<div class="reel-container">
+    <div class="reel" id="reel1">
+        <img src="img/cherry.png" alt="Cherry">
+        <img src="img/lemon.png" alt="Lemon">
+        <img src="img/bar.png" alt="Bar">
+        <img src="img/seven.png" alt="Seven">
+    </div>
+    <div class="reel" id="reel2">
+        <img src="img/cherry.png" alt="Cherry">
+        <img src="img/lemon.png" alt="Lemon">
+        <img src="img/bar.png" alt="Bar">
+        <img src="img/seven.png" alt="Seven">
+    </div>
+    <div class="reel" id="reel3">
+        <img src="img/cherry.png" alt="Cherry">
+        <img src="img/lemon.png" alt="Lemon">
+        <img src="img/bar.png" alt="Bar">
+        <img src="img/seven.png" alt="Seven">
+    </div>
+</div>
+<button id="loan-button" onclick="takeLoan()">お金を借りる</button>
+<p id="result"></p>
+
+<script>
+    let money = 0; // 初期所持金
+    const maxLoan = 1000; // 最大借入可能額
+    let loanInterestRate = 0.1; // 利子率（年率）
+    let loanAmount = 0; // 借入額
+
+    const reels = [
+        document.getElementById('reel1'),
+        document.getElementById('reel2'),
+        document.getElementById('reel3')
+    ];
+
+    const symbols = ['cherry', 'lemon', 'bar', 'seven']; // アイコンの種類
+
+    // ローカルストレージのキー
+    const saveKey = 'slotMachineSave';
+
+    // ゲームをセーブする関数
+    function saveGame() {
+        const saveData = {
+            money: money,
+            loanAmount: loanAmount
+        };
+        localStorage.setItem(saveKey, JSON.stringify(saveData));
+        alert('ゲームをセーブしました！');
+    }
+
+    // ゲームをロードする関数
+    function loadGame() {
+        const savedData = localStorage.getItem(saveKey);
+        if (savedData) {
+            const saveData = JSON.parse(savedData);
+            money = saveData.money;
+            loanAmount = saveData.loanAmount;
+            updateMoneyDisplay();
+            alert('ゲームをロードしました！');
+        } else {
+            alert('セーブデータがありません。');
+        }
+    }
+
+    // 所持金の表示を更新する関数
+    function updateMoneyDisplay() {
+        document.getElementById('money').innerText = money;
+    }
+
+    function spin() {
+        if (money <= 0 && loanAmount <= 0) {
+            alert("所持金が不足しています。お金を借りるか、借り入れ可能な限界額に達しています。");
+            return;
+        }
+
+        const reelSpeed = 100; // リールの回転速度（ms）
+        const reelStopDelay = 1000; // 停止までの遅延時間（ms）
+
+        let results = [];
+
+        // リールをランダムに回転させる
+        for (let i = 0; i < reels.length; i++) {
+            let randomIndex = Math.floor(Math.random() * symbols.length);
+            let position = -randomIndex * 100; // 画像の高さ（100px）に基づく位置
+
+            reels[i].querySelectorAll('img').forEach(img => {
+                img.style.top = `${position}px`;
+            });
+
+            results[i] = symbols[randomIndex];
+        }
+
+        // 一定時間後に結果を判定する
+        setTimeout(() => {
+            checkResults(results);
+        }, reelStopDelay);
+    }
+
+    function checkResults(results) {
+        if (results[0] === results[1] && results[1] === results[2]) {
+            money += 500; // プレイヤーが勝った場合の処理（仮の例）
+            updateMoneyDisplay();
+            document.getElementById('result').innerText = `おめでとうございます！ ${results[0]} が揃いました！`;
+        } else {
+            money -= 100; // プレイヤーが負けた場合の処理（仮の例）
+            updateMoneyDisplay();
+            document.getElementById('result').innerText = `残念！ もう一度挑戦してください。`;
+        }
+    }
+
+    function takeLoan() {
+        if (money <= 0 && loanAmount <= 0) {
+            loanAmount = maxLoan;
+            money += loanAmount;
+            updateMoneyDisplay();
+            alert(`借金 ${loanAmount} 円が追加されました。利子率は ${loanInterestRate * 100}% です。`);
+        } else {
+            alert("すでに借金をしているか、所持金が不足していないため、借金できません。");
+        }
+    }
+
+    // ページ読み込み時にロードする
+    window.onload = function() {
+        loadGame();
+    };
+</script>
+</body>
+</html>
