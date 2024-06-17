@@ -1,120 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smash Bros-like Game</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-        #gameCanvas { background: #87CEEB; display: none; }
-        #lobby, #loading { display: flex; justify-content: center; align-items: center; height: 100vh; background: #333; color: white; flex-direction: column; }
-        .character { margin: 10px; padding: 20px; background: #555; cursor: pointer; }
-        .character:hover { background: #777; }
-        #loading { display: none; font-size: 24px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡単な3Dゲーム</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+    }
+</style>
 </head>
 <body>
-    <div id="lobby">
-        <h1>Select Your Character</h1>
-        <div class="character" data-color="red">Red</div>
-        <div class="character" data-color="blue">Blue</div>
-        <div class="character" data-character="pacman">Pac-Man</div>
-        <div class="character" data-character="mario">Mario</div>
-    </div>
-    <div id="loading">Loading...</div>
-    <canvas id="gameCanvas"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        let camera, scene, renderer;
+        let player, controls;
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        init();
+        animate();
 
-        const images = {
-            pacman: new Image(),
-            mario: new Image()
-        };
+        function init() {
+            // シーンを作成
+            scene = new THREE.Scene();
 
-        // Base64エンコードされた画像データ
-        images.pacman.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAqFBMVEUAAADx7vHz8/Po6enl5ebt7e3w8PDw8PD////09PT39/fa2tr7+/vk5OT////7+/v4+PhLS0ufn5+2trbb29vx8fHT09P4+Pjo6OjT09M8PDzg4ODPz88HBweqqqrZ2dnDw8Pd3d2IiIhwcHBWVlbp6ekSEhKZmZnFxcV+fn5VVVVGRkbCwsJHR0fIyMh+fn7e3t4AAACZQ1hQdHRHd29rAAAGrUlEQVQ4y6WS61LDIAyFbRKCmG4iS+V2Pv8v+tFtyzC5AgDbw3Sv//c6+MCff2z93/8cLkX3bWg4U3sJEVSgoGcdQm2Vtx93n5tqI/5rNqNmZW37eKbJjOnQHhrd0+ThqlXt2MeTgrcZ+yQtHZz4UInyLquCjcYx1zGRjIHwXKxUs7ZFPuMvXxoROZBJzD3fqDT8iG0TeMAvcFrFYxvSo7KfT5v25dHgE5A1LKD2bDLjsz6XDE0M1KPVbXPDbrKbghDDzvcRQQRS7wp7dLCeMZknazD2InRQGLTXioLzOX0Ko47bnGVJH0aLhwrT1xILZIkzdMI+M2abZZxfp3i52x0XR9x5WJqH0tD5QQLd2WZbGkzS80rRNxGlnhMEzRi8MQEk2ijTg80FZP+OIp7CL/hVqAV+XweA2vJGb0C8cYOdGZ4XZrS6SZmUzPoQs++yRsCgm6bSt5KkO/RIR/eGFDJ/Easxvgb3Bxg/DaE4NyAJTtXOM8M3oHLTyCph1fG4A8ROrMDgN8PQTjMnYd3x8CM+LRDJ7GYj9Lwp9QQ4SKNFHf2G3w+4JEC/w9mjJqxtp1b1vNkfb4VnftPhxAeHbrAgtpntP4jmrKbbLZ7kCBhM9nqPT0xOWFb0XTZxVbmtH9v2NnsVoTMOtFg5y+eeu3GbF10UVi7rNTkKJ+H2p+KkbA1tK46t6hb4XdG2Nf3E5wZz7Fy5nC+qvJwwc3xvwAQFz0Ezy8z2+RJKx9RlP2DRoDS5B1Wz3JlzA7j7d6Njh3CpKe0+St4PgYunN2Sz9hLs2cI2ENuUt54KGrhvvXvEkWDF4qY9aHlAdXB4rbKOb19cUd91XYtf5sh9VDFzgdl56AOy8tU73z2i7n9PijSgT/9lHR1Lv13+xAAAAAElFTkSuQmCC';
-        images.mario.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAUVBMVEUAAADW19jY2Nl5f3Tq6eqUmZiLjpCzz9prfW70+fWruLuQj6T5+/fMzsy+pqeOj44AfH2kp6SioqMKemYZGWllY2J8fn9TUlM6OjsyLy2ISXIpKCsMAAAAXElEQVQI12OAVRL+QyKgCEUEhkKIM4kcOBA1Q6tEzUz5k6BClc1pFBwtbXRUuOotGdi0XYErF/2cUtH7ikJfTtdH5ajzZpfMj6ZoDJsbA0ElOtUDEWIwMAOXooIVM/UD3AAAAAElFTkSuQmCC';
+            // カメラを作成
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 10;
 
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height - 150,
-            width: 50,
-            height: 50,
-            color: 'red',
-            character: null,
-            speed: 5,
-            dx: 0,
-            dy: 0
-        };
+            // レンダラーを作成
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-        function drawPlayer() {
-            if (player.character === 'pacman') {
-                drawCharacter(images.pacman);
-            } else if (player.character === 'mario') {
-                drawCharacter(images.mario);
-            } else {
-                ctx.fillStyle = player.color;
-                ctx.fillRect(player.x, player.y, player.width, player.height);
-            }
+            // ジオメトリとマテリアルを作成
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+            // プレイヤーを作成
+            player = new THREE.Mesh(geometry, material);
+            scene.add(player);
+
+            // カメラコントロールを追加
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // ウィンドウサイズが変更されたときの処理
+            window.addEventListener('resize', onWindowResize);
         }
 
-        function drawCharacter(image) {
-            ctx.drawImage(image, player.x, player.y, player.width, player.height);
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // プレイヤーを回転させる
+            player.rotation.x += 0.01;
+            player.rotation.y += 0.01;
+
+            // レンダリング
+            renderer.render(scene, camera);
         }
 
-        function clear() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function onWindowResize() {
+            // ウィンドウサイズが変更されたときの処理
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
-
-        function newPos() {
-            player.x += player.dx;
-            player.y += player.dy;
-
-            // 壁の衝突判定
-            if (player.x < 0) {
-                player.x = 0;
-            }
-            if (player.x + player.width > canvas.width) {
-                player.x = canvas.width - player.width;
-            }
-            if (player.y < 0) {
-                player.y = 0;
-            }
-            if (player.y + player.height > canvas.height) {
-                player.y = canvas.height - player.height;
-            }
-        }
-
-        function update() {
-            clear();
-            drawPlayer();
-            newPos();
-            requestAnimationFrame(update);
-        }
-
-        function moveRight() {
-            player.dx = player.speed;
-        }
-
-        function moveLeft() {
-            player.dx = -player.speed;
-        }
-
-        function moveUp() {
-            player.dy = -player.speed;
-        }
-
-        function moveDown() {
-            player.dy = player.speed;
-        }
-
-        function keyDown(e) {
-            if (e.key === 'ArrowRight' || e.key === 'd') {
-                moveRight();
-            } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-                moveLeft();
-            } else if (e.key === 'ArrowUp' || e.key === 'w') {
+    </script>
+</body>
+</html>
