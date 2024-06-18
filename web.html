@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青鬼 - ウェブ版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 1px solid #fff;
+        }
+
+        #game-canvas {
+            display: block;
+        }
+
+        #message-box {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px;
+            display: none;
+        }
+
+        #message-box p {
+            margin: 0;
+        }
+
+        #next-button {
+            display: block;
+            margin-top: 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div id="message-box">
+            <p id="message"></p>
+            <button id="next-button">次へ</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const messageBox = document.getElementById('message-box');
+        const message = document.getElementById('message');
+        const nextButton = document.getElementById('next-button');
+
+        let player = { x: 100, y: 100, width: 50, height: 50, color: 'blue' };
+        let blueOni = { x: 400, y: 300, width: 50, height: 50, color: 'purple' };
+        let characters = [
+            { name: 'Hiroshi', x: 150, y: 150, width: 50, height: 50, color: 'green' },
+            { name: 'Takeshi', x: 200, y: 200, width: 50, height: 50, color: 'red' }
+        ];
+
+        let doors = [
+            { x: 700, y: 250, width: 50, height: 100, color: 'brown', open: false }
+        ];
+
+        let messages = [
+            "あなたは不気味な館に入りました。",
+            "部屋の中は静まり返っています。",
+            "青鬼が突然現れました！",
+            "仲間たちと一緒に逃げなければなりません。",
+            "ドアを開けて次の部屋に進みましょう。"
+        ];
+        let currentMessageIndex = 0;
+
+        function drawCharacter(character) {
+            ctx.fillStyle = character.color;
+            ctx.fillRect(character.x, character.y, character.width, character.height);
+        }
+
+        function drawDoor(door) {
+            ctx.fillStyle = door.color;
+            ctx.fillRect(door.x, door.y, door.width, door.height);
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCharacter(player);
+            drawCharacter(blueOni);
+            characters.forEach(drawCharacter);
+            doors.forEach(drawDoor);
+        }
+
+        function showMessage(text) {
+            messageBox.style.display = 'block';
+            message.textContent = text;
+        }
+
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentMessageIndex++;
+            if (currentMessageIndex < messages.length) {
+                showMessage(messages[currentMessageIndex]);
+            } else {
+                hideMessage();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            const speed = 5;
+            switch (event.key) {
+                case 'ArrowUp':
+                    player.y -= speed;
+                    break;
+                case 'ArrowDown':
+                    player.y += speed;
+                    break;
+                case 'ArrowLeft':
+                    player.x -= speed;
+                    break;
+                case 'ArrowRight':
+                    player.x += speed;
+                    break;
+            }
+
+            // Check for door interaction
+            doors.forEach(door => {
+                if (player.x < door.x + door.width &&
+                    player.x + player.width > door.x &&
+                    player.y < door.y + door.height &&
+                    player.y + player.height > door.y) {
+                        door.open = true;
+                        door.color = 'gray';
+                        showMessage("ドアが開きました。次の部屋に進めます。");
+                }
+            });
+
+            update();
+        });
+
+        update();
+        showMessage(messages[currentMessageIndex]);
+    </script>
+</body>
+</html>
