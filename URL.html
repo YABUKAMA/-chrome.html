@@ -1,43 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML to Data URL</title>
+    <title>HTMLファイルをURLに変換</title>
 </head>
 <body>
-    <h1>Convert HTML File to Data URL</h1>
+    <h1>HTMLファイルをURLに変換</h1>
     <input type="file" id="fileInput" accept=".html">
-    <button onclick="convertToDataURL()">Convert</button>
-    <p id="output"></p>
+    <button onclick="convertToURL()">変換</button>
+    <p id="result"></p>
 
     <script>
-        function convertToDataURL() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    // Base64エンコードを行う
-                    const base64Content = btoa(event.target.result);
-                    // データURLを作成する
-                    const dataURL = `data:text/html;base64,${base64Content}`;
-                    // 結果を表示する
-                    const output = document.getElementById('output');
-                    output.textContent = dataURL;
-                    // データURLをリンクとして表示する
-                    const link = document.createElement('a');
-                    link.href = dataURL;
-                    link.textContent = 'Open Data URL';
-                    link.target = '_blank';
-                    output.appendChild(document.createElement('br'));
-                    output.appendChild(link);
-                };
-                reader.readAsText(file);
-            } else {
-                alert('Please select a file.');
+        function convertToURL() {
+            const fileInput = document.getElementById('fileInput').files[0];
+            if (!fileInput) {
+                alert('ファイルを選択してください');
+                return;
             }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const fileContent = event.target.result;
+                const base64Content = btoa(fileContent);
+                const url = `data:text/html;base64,${base64Content}`;
+                const resultElement = document.getElementById('result');
+                resultElement.innerHTML = `<a href="${url}" target="_blank">ここをクリックしてHTMLを表示</a>`;
+            };
+            
+            reader.onerror = function() {
+                alert('ファイルの読み込みに失敗しました');
+            };
+            
+            reader.readAsText(fileInput);
         }
     </script>
 </body>
