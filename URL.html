@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URLチェンジャー</title>
+    <title>HTML to BlubURL Converter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,26 +23,56 @@
             padding: 10px;
             margin: 5px;
         }
-        .container input {
-            width: 300px;
+        .container input[type="file"] {
+            width: 100%;
+        }
+        .container button {
+            width: 100%;
+        }
+        .container a {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>URLチェンジャー</h1>
-        <input type="text" id="urlInput" placeholder="URLを入力してください">
-        <button onclick="changeURL()">変更</button>
+        <h1>HTML to BlubURL Converter</h1>
+        <input type="file" id="htmlFileInput" accept=".html">
+        <button onclick="convertFile()">変換</button>
+        <a id="downloadLink">変換ファイルをダウンロード</a>
     </div>
 
     <script>
-        function changeURL() {
-            const url = document.getElementById('urlInput').value;
-            if (url) {
-                window.location.href = url;
-            } else {
-                alert('有効なURLを入力してください。');
+        function convertFile() {
+            const fileInput = document.getElementById('htmlFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('HTMLファイルを選択してください。');
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const htmlContent = event.target.result;
+                const blubURLContent = convertHTMLToBlubURL(htmlContent);
+                downloadFile(blubURLContent, 'converted.bluburl');
+            };
+            reader.readAsText(file);
+        }
+
+        function convertHTMLToBlubURL(htmlContent) {
+            // ここでHTMLをBlubURL形式に変換するロジックを実装します。
+            // 仮に、HTMLをそのままBlubURL形式にラップする例を示します。
+            return `BlubURL:\n\n${htmlContent}`;
+        }
+
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.getElementById('downloadLink');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.style.display = 'block';
         }
     </script>
 </body>
