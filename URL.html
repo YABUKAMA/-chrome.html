@@ -1,78 +1,32 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML to BlubURL Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .container input, .container button {
-            padding: 10px;
-            margin: 5px;
-        }
-        .container input[type="file"] {
-            width: 100%;
-        }
-        .container button {
-            width: 100%;
-        }
-        .container a {
-            display: none;
-        }
-    </style>
+    <title>HTML to Bulb URL</title>
 </head>
 <body>
-    <div class="container">
-        <h1>HTML to BlubURL Converter</h1>
-        <input type="file" id="htmlFileInput" accept=".html">
-        <button onclick="convertFile()">変換</button>
-        <a id="downloadLink">変換ファイルをダウンロード</a>
-    </div>
+    <h1>Convert HTML File to Data URL</h1>
+    <input type="file" id="fileInput" accept=".html">
+    <button onclick="convertToDataURL()">Convert</button>
+    <p id="output"></p>
 
     <script>
-        function convertFile() {
-            const fileInput = document.getElementById('htmlFileInput');
+        function convertToDataURL() {
+            const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
 
-            if (!file) {
-                alert('HTMLファイルを選択してください。');
-                return;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Content = btoa(event.target.result);
+                    const dataURL = `data:text/html;base64,${base64Content}`;
+                    document.getElementById('output').textContent = dataURL;
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please select a file.');
             }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const htmlContent = event.target.result;
-                const blubURLContent = convertHTMLToBlubURL(htmlContent);
-                downloadFile(blubURLContent, 'converted.bluburl');
-            };
-            reader.readAsText(file);
-        }
-
-        function convertHTMLToBlubURL(htmlContent) {
-            // ここでHTMLをBlubURL形式に変換するロジックを実装します。
-            // 仮に、HTMLをそのままBlubURL形式にラップする例を示します。
-            return `BlubURL:\n\n${htmlContent}`;
-        }
-
-        function downloadFile(content, fileName) {
-            const blob = new Blob([content], { type: 'text/plain' });
-            const link = document.getElementById('downloadLink');
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-            link.style.display = 'block';
         }
     </script>
 </body>
