@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML to Bulb URL</title>
+    <title>HTML to Data URL</title>
 </head>
 <body>
     <h1>Convert HTML File to Data URL</h1>
@@ -19,9 +19,20 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
+                    // Base64エンコードを行う
                     const base64Content = btoa(event.target.result);
+                    // データURLを作成する
                     const dataURL = `data:text/html;base64,${base64Content}`;
-                    document.getElementById('output').textContent = dataURL;
+                    // 結果を表示する
+                    const output = document.getElementById('output');
+                    output.textContent = dataURL;
+                    // データURLをリンクとして表示する
+                    const link = document.createElement('a');
+                    link.href = dataURL;
+                    link.textContent = 'Open Data URL';
+                    link.target = '_blank';
+                    output.appendChild(document.createElement('br'));
+                    output.appendChild(link);
                 };
                 reader.readAsText(file);
             } else {
