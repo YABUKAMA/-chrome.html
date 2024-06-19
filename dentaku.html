@@ -84,6 +84,7 @@
         <div class="button" onclick="appendNumber('.')">.</div>
         <div class="button" onclick="calculate()">=</div>
         <div class="button" onclick="chooseOperation('+')">+</div>
+        <div class="button" onclick="chooseOperation('**')">^</div>
         <div class="button wide" onclick="clearDisplay()">C</div>
     </div>
 </div>
@@ -111,8 +112,8 @@
 
     function calculate() {
         let result;
-        const prev = BigInt(previousOperand);
-        const current = BigInt(currentOperand);
+        const prev = parseFloat(previousOperand);
+        const current = parseFloat(currentOperand);
         if (isNaN(prev) || isNaN(current)) return;
         switch (operation) {
             case '+':
@@ -126,6 +127,9 @@
                 break;
             case '/':
                 result = prev / current;
+                break;
+            case '**':
+                result = Math.pow(prev, current);
                 break;
             default:
                 return;
