@@ -9,7 +9,7 @@ function handleFileSelect(event) {
     const file = event.target.files[0]; // ファイルを取得
 
     if (file) {
-        const baseURL = 'blub://example.com/files/'; // blub://というカスタムプロトコルを設定
+        const baseURL = 'ftp://example.com/files/'; // 基本URLを設定（例としてftp://を使用）
         const url = baseURL + encodeURIComponent(file.name); // ファイル名をエンコードしてURLを生成
         document.getElementById('result').textContent = url; // 結果を表示
     }
