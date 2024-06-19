@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>不可思議電卓</title>
+    <title>電卓</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -18,6 +19,12 @@
             border-radius: 10px;
             padding: 20px;
             background-color: white;
+            width: 300px;
+        }
+        .title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
         }
         .display {
             width: 100%;
@@ -53,22 +60,12 @@
         .wide {
             grid-column: span 2;
         }
-        .settings {
-            margin-bottom: 10px;
-        }
-        .settings input {
-            width: 50px;
-            text-align: right;
-        }
     </style>
 </head>
 <body>
 
 <div class="calculator">
-    <div class="settings">
-        <label for="displayLength">表示桁数:</label>
-        <input type="number" id="displayLength" value="20" min="1">
-    </div>
+    <div class="title">電卓</div>
     <div class="display" id="display">0</div>
     <div class="buttons">
         <div class="button" onclick="appendNumber('7')">7</div>
@@ -97,4 +94,59 @@
     let operation = null;
 
     function appendNumber(number) {
-        if (number === '.' && currentOperand.includes('.
+        if (number === '.' && currentOperand.includes('.')) return;
+        currentOperand = currentOperand.toString() + number.toString();
+        updateDisplay();
+    }
+
+    function chooseOperation(op) {
+        if (currentOperand === '') return;
+        if (previousOperand !== '') {
+            calculate();
+        }
+        operation = op;
+        previousOperand = currentOperand;
+        currentOperand = '';
+    }
+
+    function calculate() {
+        let result;
+        const prev = BigInt(previousOperand);
+        const current = BigInt(currentOperand);
+        if (isNaN(prev) || isNaN(current)) return;
+        switch (operation) {
+            case '+':
+                result = prev + current;
+                break;
+            case '-':
+                result = prev - current;
+                break;
+            case '*':
+                result = prev * current;
+                break;
+            case '/':
+                result = prev / current;
+                break;
+            default:
+                return;
+        }
+        currentOperand = result.toString();
+        operation = null;
+        previousOperand = '';
+        updateDisplay();
+    }
+
+    function clearDisplay() {
+        currentOperand = '';
+        previousOperand = '';
+        operation = null;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById('display').innerText = currentOperand;
+    }
+</script>
+
+</body>
+</html>
