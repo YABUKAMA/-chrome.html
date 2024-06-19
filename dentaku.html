@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>不可思議電卓</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .calculator {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: white;
+        }
+        .display {
+            width: 100%;
+            height: 40px;
+            text-align: right;
+            margin-bottom: 10px;
+            padding-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 24px;
+            overflow-x: auto;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .button {
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            user-select: none;
+        }
+        .button:hover {
+            background-color: #e0e0e0;
+        }
+        .button:active {
+            background-color: #ccc;
+        }
+        .wide {
+            grid-column: span 2;
+        }
+        .settings {
+            margin-bottom: 10px;
+        }
+        .settings input {
+            width: 50px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="settings">
+        <label for="displayLength">表示桁数:</label>
+        <input type="number" id="displayLength" value="20" min="1">
+    </div>
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+        <div class="button" onclick="appendNumber('7')">7</div>
+        <div class="button" onclick="appendNumber('8')">8</div>
+        <div class="button" onclick="appendNumber('9')">9</div>
+        <div class="button" onclick="chooseOperation('/')">÷</div>
+        <div class="button" onclick="appendNumber('4')">4</div>
+        <div class="button" onclick="appendNumber('5')">5</div>
+        <div class="button" onclick="appendNumber('6')">6</div>
+        <div class="button" onclick="chooseOperation('*')">×</div>
+        <div class="button" onclick="appendNumber('1')">1</div>
+        <div class="button" onclick="appendNumber('2')">2</div>
+        <div class="button" onclick="appendNumber('3')">3</div>
+        <div class="button" onclick="chooseOperation('-')">−</div>
+        <div class="button" onclick="appendNumber('0')">0</div>
+        <div class="button" onclick="appendNumber('.')">.</div>
+        <div class="button" onclick="calculate()">=</div>
+        <div class="button" onclick="chooseOperation('+')">+</div>
+        <div class="button wide" onclick="clearDisplay()">C</div>
+    </div>
+</div>
+
+<script>
+    let currentOperand = '';
+    let previousOperand = '';
+    let operation = null;
+
+    function appendNumber(number) {
+        if (number === '.' && currentOperand.includes('.
