@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File to URL Converter</title>
+<script>
+function handleFileSelect(event) {
+    const file = event.target.files[0]; // ファイルを取得
+
+    if (file) {
+        const baseURL = 'http://example.com/files/'; // ベースURLを設定
+        const url = baseURL + encodeURIComponent(file.name); // ファイル名をエンコードしてURLを生成
+        document.getElementById('result').textContent = url; // 結果を表示
+    }
+}
+</script>
+</head>
+<body>
+    <h1>File to URL Converter</h1>
+    <label for="fileInput">Select a file:</label>
+    <input type="file" id="fileInput" onchange="handleFileSelect(event)">
+    <p>Resulting URL:</p>
+    <p id="result"></p>
+</body>
+</html>
