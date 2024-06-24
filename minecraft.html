@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Classic Demo</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // テクスチャのBase64データ
+        const grassTopTextureData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAOElEQVR42mJ8+vTpfwYkaNEi/6Hp1au/4+5dffoGIUSQQUUNig7VVUNoaANFXVuk5fvr1d2oKAIcWNjkN7jcQAAAAASUVORK5CYII=';
+        const grassSideTextureData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAc0lEQVR42mJ8+/btfwYkaNEi/7+/v/38+fMHGRoaClJQUtLv37x/H5eXlf4DWXwGJgYWzMwMDAwf5E+ffu3VsQEBCCZGFhYf+E0NDREyDFjI6OSklJv7/+/wH3+/vL8SYj48/FF8//+/TPAEQwGAAuwQ4DDM7URAAAAAElFTkSuQmCC';
+        const dirtTextureData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAV0lEQVR42mJ8+/btfwYkT58+2f/v3//+fHjx7GxcUlYQAZKSspwzZp1coyc+csAARv349Fbo6GjISkpKf8Hjx4v9bcnIyLh7l5eURm/jxo3DEhISEFCTk6uTogMFqWmJiC8YGphkAAAAASUVORK5CYII=';
+        const stoneTextureData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAaElEQVR42mJ8+/btfwYkT52+/vnn/+7cudNTU1Pp19fXmJioWPXv31/2ZWVlQNiMjCwsLNtvXLlyMjU1+QYHB9cPExISAP7jxo2xL1++/O6PP36IJGhoaFRQUKDv7+8hLS1N+Tc3NwMDA2y+fRvbtQe+SAAAAABJRU5ErkJggg==';
+
+        // シーンの作成
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xa0a0a0);
+
+        // カメラの作成
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 10;
+
+        // レンダラーの作成
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 照明の追加
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1).normalize();
+        scene.add(light);
+
+        // テクスチャローダーの作成
+        const textureLoader = new THREE.TextureLoader();
+
+        // テクスチャの読み込み
+        const grassTopTexture = textureLoader.load(grassTopTextureData);
+        const grassSideTexture = textureLoader.load(grassSideTextureData);
+        const dirtTexture = textureLoader.load(dirtTextureData);
+        const stoneTexture = textureLoader.load(stoneTextureData);
+
+        // 草ブロックのマテリアル
+        const grassMaterials = [
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // right
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // left
+            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  // top
+            new THREE.MeshLambertMaterial({ map: dirtTexture }),      // bottom
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // front
+            new THREE.MeshLambertMaterial({ map: grassSideTexture })  // back
+        ];
+
+        // ブロックの作成関数
+        function createBlock(materials, x, y, z) {
+            const geometry = new THREE.BoxGeometry();
+            const block = new THREE.Mesh(geometry, materials);
+            block.position.set(x, y, z);
+            scene.add(block);
+        }
+
+        // ブロックの配置
+        for (let x = -5; x <= 5; x++) {
+            for (let y = -5; y <= 0; y++) {
+                for (let z = -5; z <= 5; z++) {
+                    if (y == 0) {
+                        createBlock(grassMaterials, x, y, z);
+                    } else if (y == -1) {
+                        createBlock(new THREE.MeshLambertMaterial({ map: dirtTexture }), x, y, z);
+                    } else {
+                        createBlock(new THREE.MeshLambertMaterial({ map: stoneTexture }), x, y, z);
+                    }
+                }
+            }
+        }
+
+        // カメラコントロール
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.enableZoom = true;
+
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
